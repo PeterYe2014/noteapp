@@ -1,134 +1,134 @@
 # CLAUDE.md
 
-This document provides guidance for AI assistants working on the noteapp codebase.
+本文档为 AI 助手在 noteapp 代码库中工作提供指导。
 
-## Project Overview
+## 项目概述
 
-**noteapp** is a voice-based note-taking application that allows users to record information using voice input. The project is in its early development stage.
+**noteapp** 是一款基于语音的笔记应用程序，允许用户通过语音输入记录信息。该项目目前处于早期开发阶段。
 
-### Current Status
+### 当前状态
 
-This is a greenfield project at the initial setup phase:
-- No source code has been written yet
-- Technology stack has not been finalized
-- Architecture decisions are pending
+这是一个处于初始设置阶段的全新项目：
+- 尚未编写任何源代码
+- 技术栈尚未确定
+- 架构决策待定
 
-## Repository Structure
+## 仓库结构
 
 ```
 noteapp/
-├── CLAUDE.md          # AI assistant guidelines (this file)
-└── README.md          # Project description
+├── CLAUDE.md          # AI 助手指南（本文件）
+└── README.md          # 项目描述
 ```
 
-## Development Guidelines
+## 开发指南
 
-### Getting Started
+### 入门
 
-Since this project is in early development, the first steps involve:
-1. Defining the technology stack (language, framework, platform)
-2. Setting up the project structure and build tools
-3. Configuring development environment (linting, testing, etc.)
+由于该项目处于早期开发阶段，首要步骤包括：
+1. 确定技术栈（语言、框架、平台）
+2. 设置项目结构和构建工具
+3. 配置开发环境（代码检查、测试等）
 
-### Recommended Technology Considerations
+### 推荐技术考虑
 
-For a voice-based note application, consider:
-- **Audio/Voice APIs**: Web Audio API, MediaRecorder API, or native mobile APIs
-- **Speech-to-Text**: Web Speech API, or cloud services (Google Cloud Speech, AWS Transcribe, etc.)
-- **Storage**: Local storage, IndexedDB (web), or cloud storage for notes
-- **Framework Options**: React/Next.js (web), React Native (mobile), Electron (desktop)
+对于基于语音的笔记应用，请考虑：
+- **音频/语音 API**：Web Audio API、MediaRecorder API 或原生移动 API
+- **语音转文字**：Web Speech API，或云服务（Google Cloud Speech、AWS Transcribe 等）
+- **存储**：本地存储、IndexedDB（Web）或云存储用于笔记
+- **框架选项**：React/Next.js（Web）、React Native（移动端）、Electron（桌面端）
 
-## Code Conventions
+## 代码规范
 
-When code is added to this project, follow these conventions:
+向本项目添加代码时，请遵循以下规范：
 
-### General Principles
-- Write clear, self-documenting code
-- Keep functions small and focused on a single responsibility
-- Use meaningful variable and function names
-- Add comments only for complex logic that isn't self-evident
+### 基本原则
+- 编写清晰、自文档化的代码
+- 保持函数小巧并专注于单一职责
+- 使用有意义的变量和函数名称
+- 仅为不易理解的复杂逻辑添加注释
 
-### File Organization
-- Group related files by feature or domain
-- Keep configuration files in the project root
-- Place source code in a `src/` directory
-- Place tests alongside source files or in a `__tests__` directory
+### 文件组织
+- 按功能或领域对相关文件进行分组
+- 将配置文件保留在项目根目录
+- 将源代码放在 `src/` 目录中
+- 将测试文件放在源文件旁边或 `__tests__` 目录中
 
-### Commit Messages
-- Use imperative mood ("Add feature" not "Added feature")
-- Keep the first line under 72 characters
-- Include context in the body when needed
+### 提交信息
+- 使用祈使语气（"添加功能" 而非 "添加了功能"）
+- 第一行保持在 72 个字符以内
+- 需要时在正文中包含上下文说明
 
-## Build and Development Commands
+## 构建和开发命令
 
-*To be defined once the project is set up*
+*待项目设置完成后确定*
 
-Example structure for future reference:
+未来参考的示例结构：
 ```bash
-# Install dependencies
+# 安装依赖
 npm install
 
-# Run development server
+# 运行开发服务器
 npm run dev
 
-# Run tests
+# 运行测试
 npm test
 
-# Build for production
+# 生产构建
 npm run build
 
-# Lint code
+# 代码检查
 npm run lint
 ```
 
-## Testing Strategy
+## 测试策略
 
-*To be established during project setup*
+*待项目设置期间建立*
 
-Recommended approach:
-- Unit tests for core logic
-- Integration tests for audio/voice features
-- End-to-end tests for critical user flows
+推荐方法：
+- 核心逻辑的单元测试
+- 音频/语音功能的集成测试
+- 关键用户流程的端到端测试
 
-## Key Features to Implement
+## 待实现的核心功能
 
-Based on the project description, core functionality should include:
-1. **Voice Recording**: Capture audio input from the user
-2. **Speech-to-Text**: Convert voice recordings to text notes
-3. **Note Management**: Create, read, update, and delete notes
-4. **Note Organization**: Categories, tags, or folders for notes
-5. **Search**: Find notes by content or metadata
+根据项目描述，核心功能应包括：
+1. **语音录制**：捕获用户的音频输入
+2. **语音转文字**：将语音录音转换为文字笔记
+3. **笔记管理**：创建、读取、更新和删除笔记
+4. **笔记组织**：为笔记提供分类、标签或文件夹
+5. **搜索**：按内容或元数据查找笔记
 
-## Special Considerations
+## 特别注意事项
 
-### Audio/Voice Features
-- Handle microphone permissions gracefully
-- Provide visual feedback during recording
-- Support multiple audio formats
-- Consider offline functionality
+### 音频/语音功能
+- 优雅地处理麦克风权限
+- 在录制期间提供视觉反馈
+- 支持多种音频格式
+- 考虑离线功能
 
-### Privacy and Security
-- Audio data may be sensitive - handle appropriately
-- If using cloud speech-to-text, inform users about data transmission
-- Consider local-first architecture for privacy
+### 隐私和安全
+- 音频数据可能敏感 - 需妥善处理
+- 如使用云端语音转文字服务，需告知用户数据传输情况
+- 考虑本地优先架构以保护隐私
 
-### Accessibility
-- Provide visual alternatives to audio feedback
-- Support keyboard navigation
-- Ensure screen reader compatibility
+### 无障碍访问
+- 为音频反馈提供视觉替代方案
+- 支持键盘导航
+- 确保屏幕阅读器兼容性
 
-## AI Assistant Guidelines
+## AI 助手指南
 
-When working on this codebase:
+在处理此代码库时：
 
-1. **Understand Context**: Read relevant files before making changes
-2. **Minimal Changes**: Make only the changes necessary to complete the task
-3. **No Over-Engineering**: Avoid adding features or abstractions not requested
-4. **Test Changes**: Run tests if available before committing
-5. **Clear Commits**: Write descriptive commit messages explaining the "why"
+1. **理解上下文**：在进行更改之前阅读相关文件
+2. **最小化更改**：仅进行完成任务所必需的更改
+3. **避免过度工程**：不添加未请求的功能或抽象
+4. **测试更改**：如有测试可用，在提交前运行测试
+5. **清晰的提交**：编写描述性的提交信息，解释"为什么"
 
-### Common Tasks
+### 常见任务
 
-- **Adding a new feature**: Create necessary files, update imports, add tests
-- **Fixing bugs**: Identify root cause, make minimal fix, verify with tests
-- **Refactoring**: Ensure tests pass before and after changes
+- **添加新功能**：创建必要的文件，更新导入，添加测试
+- **修复错误**：识别根本原因，进行最小修复，通过测试验证
+- **重构**：确保更改前后测试都能通过
