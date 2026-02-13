@@ -12,19 +12,41 @@
 
 ### 当前状态
 
-这是一个处于初始设置阶段的全新项目：
-- 尚未编写任何源代码
-- 技术栈已确定（见下方）
-- 架构决策已完成
+**M1 里程碑已完成**：应用骨架已搭建，导航正常运行。
+
+- 项目已初始化（Expo + TypeScript）
+- 底部 Tab 导航已配置
+- UI 组件库已集成（React Native Paper）
+- 数据库已配置（expo-sqlite）
+- 基础页面已创建（首页、录音、设置、详情页）
 
 ## 仓库结构
 
 ```
 noteapp/
-├── CLAUDE.md          # AI 助手指南（本文件）
-├── MVP_DESIGN.md      # MVP 设计文档
-├── README.md          # 项目描述
-└── .gitignore         # Git 忽略配置
+├── app/                    # Expo Router 页面
+│   ├── (tabs)/             # Tab 导航页面
+│   │   ├── _layout.tsx     # Tab 导航配置
+│   │   ├── index.tsx       # 首页（笔记列表）
+│   │   ├── record.tsx      # 录音页
+│   │   └── settings.tsx    # 设置页
+│   ├── note/
+│   │   └── [id].tsx        # 笔记详情页
+│   └── _layout.tsx         # 根布局
+├── src/
+│   ├── db/
+│   │   └── database.ts     # SQLite 数据库配置
+│   ├── store/
+│   │   └── noteStore.ts    # Zustand 状态管理
+│   └── types/
+│       └── note.ts         # TypeScript 类型定义
+├── assets/                 # 静态资源
+├── app.json               # Expo 配置
+├── package.json           # 依赖配置
+├── tsconfig.json          # TypeScript 配置
+├── CLAUDE.md              # AI 助手指南（本文件）
+├── MVP_DESIGN.md          # MVP 设计文档
+└── README.md              # 项目描述
 ```
 
 ## 技术栈
@@ -112,12 +134,12 @@ eas build --platform all
 
 ### 里程碑
 
-| 里程碑 | 时间 | 验收标准 |
-|--------|------|----------|
-| M1 | 第 1 周 | 应用骨架运行，导航正常 |
-| M2 | 第 2 周 | 笔记 CRUD 功能可用 |
-| M3 | 第 3 周 | 语音转文字并保存成功 |
-| M4 | 第 4 周 | 提交至应用商店 |
+| 里程碑 | 时间 | 验收标准 | 状态 |
+|--------|------|----------|------|
+| M1 | 第 1 周 | 应用骨架运行，导航正常 | ✅ 已完成 |
+| M2 | 第 2 周 | 笔记 CRUD 功能可用 | 🔲 待开始 |
+| M3 | 第 3 周 | 语音转文字并保存成功 | 🔲 待开始 |
+| M4 | 第 4 周 | 提交至应用商店 | 🔲 待开始 |
 
 ## 代码规范
 
