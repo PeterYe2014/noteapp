@@ -34,15 +34,17 @@ describe('Note type', () => {
 });
 
 describe('Word count calculation', () => {
-  const calculateWordCount = (content: string): number => {
-    return content.trim().split(/\s+/).filter(Boolean).length;
-  };
+  const { calculateWordCount } = require('../utils/wordCount');
 
-  it('should count Chinese words separated by spaces', () => {
-    expect(calculateWordCount('你好 世界')).toBe(2);
+  it('should count each Chinese character', () => {
+    expect(calculateWordCount('你好世界')).toBe(4);
   });
 
-  it('should count English words', () => {
+  it('should count Chinese characters separated by spaces', () => {
+    expect(calculateWordCount('你好 世界')).toBe(4);
+  });
+
+  it('should count English words by spaces', () => {
     expect(calculateWordCount('hello world')).toBe(2);
   });
 
@@ -54,7 +56,21 @@ describe('Word count calculation', () => {
     expect(calculateWordCount('   ')).toBe(0);
   });
 
-  it('should handle mixed content', () => {
-    expect(calculateWordCount('Hello 你好 World 世界')).toBe(4);
+  it('should handle mixed Chinese and English', () => {
+    // 4 CJK chars (你好世界) + 2 English words (Hello World) = 6
+    expect(calculateWordCount('Hello 你好 World 世界')).toBe(6);
+  });
+
+  it('should count a full Chinese sentence', () => {
+    expect(calculateWordCount('这是一条测试笔记')).toBe(8);
+  });
+
+  it('should handle English only with multiple spaces', () => {
+    expect(calculateWordCount('hello   world')).toBe(2);
+  });
+
+  it('should handle single character', () => {
+    expect(calculateWordCount('A')).toBe(1);
+    expect(calculateWordCount('中')).toBe(1);
   });
 });

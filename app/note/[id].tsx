@@ -1,16 +1,70 @@
-import { useState } from 'react';
-import { View, ScrollView, StyleSheet, Alert } from 'react-native';
-import { Text, Button, Surface, Portal, Dialog } from 'react-native-paper';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useState, useEffect, useRef, useCallback } from 'react';
+import { View, StyleSheet, TextInput, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
+import { Text, Surface, IconButton } from 'react-native-paper';
+import { useLocalSearchParams, useNavigation } from 'expo-router';
 import { useNoteStore } from '../../src/store/noteStore';
 
+const AUTO_SAVE_DELAY = 800;
+
 export default function NoteDetailScreen() {
-  const { id } = useLocalSearchParams<{ id: string }>();
-  const router = useRouter();
-  const { getNoteById, deleteNote } = useNoteStore();
-  const [deleteDialogVisible, setDeleteDialogVisible] = useState(false);
+  const { id, edit } = useLocalSearchParams<{ id: string; edit?: string }>();
+  const navigation = useNavigation();
+  const { getNoteById, updateNote } = useNoteStore();
+  const [content, setContent] = useState('');
+  const [isEditing, setIsEditing] = useState(edit === '1');
+  const [saveStatus, setSaveStatus] = useState<'saved' | 'saving' | 'idle'>('idle');
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const lastSavedRef = useRef('');
 
   const note = getNoteById(id);
+
+  useEffect(() => {
+    if (note) {
+      setContent(note.content);
+      lastSavedRef.current = note.content;
+    }
+  }, [note?.id]);
+
+  useEffect(() => {
+    navigation.setOptions({
+      headerRight: () =>
+        !isEditing ? (
+          <IconButton
+            icon="pencil"
+            size={22}
+            onPress={() => setIsEditing(true)}
+          />
+        ) : null,
+    });
+  }, [navigation, isEditing]);
+
+  useEffect(() => {
+    return () => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+    };
+  }, []);
+
+  const doSave = useCallback(async (text: string) => {
+    const trimmed = text.trim();
+    if (!trimmed || trimmed === lastSavedRef.current) return;
+
+    setSaveStatus('saving');
+    try {
+      await updateNote(id, trimmed);
+      lastSavedRef.current = trimmed;
+      setSaveStatus('saved');
+    } catch {
+      setSaveStatus('idle');
+    }
+  }, [id, updateNote]);
+
+  const handleChangeText = useCallback((text: string) => {
+    setContent(text);
+    setSaveStatus('idle');
+
+    if (timerRef.current) clearTimeout(timerRef.current);
+    timerRef.current = setTimeout(() => doSave(text), AUTO_SAVE_DELAY);
+  }, [doSave]);
 
   if (!note) {
     return (
@@ -31,64 +85,51 @@ export default function NoteDetailScreen() {
     });
   };
 
-  const handleDelete = async () => {
-    try {
-      await deleteNote(id);
-      setDeleteDialogVisible(false);
-      router.back();
-    } catch (error) {
-      Alert.alert('错误', '删除失败，请重试');
-    }
-  };
-
   return (
-    <View style={styles.container}>
-      <ScrollView style={styles.scrollView}>
-        <Surface style={styles.contentCard} elevation={1}>
-          <Text variant="bodyLarge" style={styles.content}>
-            {note.content}
-          </Text>
-        </Surface>
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
+    >
+      <Surface style={styles.contentCard} elevation={1}>
+        {isEditing ? (
+          <TextInput
+            style={styles.editInput}
+            value={content}
+            onChangeText={handleChangeText}
+            multiline
+            textAlignVertical="top"
+            placeholder="输入笔记内容..."
+            placeholderTextColor="#9e9e9e"
+            autoFocus
+          />
+        ) : (
+          <ScrollView style={styles.readContent}>
+            <Text variant="bodyLarge" style={styles.readText}>
+              {note.content}
+            </Text>
+          </ScrollView>
+        )}
+      </Surface>
 
-        <View style={styles.meta}>
-          <Text variant="bodySmall" style={styles.metaText}>
-            创建时间：{formatDate(note.createdAt)}
-          </Text>
-          <Text variant="bodySmall" style={styles.metaText}>
-            字数：{note.wordCount}
-          </Text>
-        </View>
-      </ScrollView>
-
-      <View style={styles.actions}>
-        <Button
-          mode="contained"
-          buttonColor="#f44336"
-          onPress={() => setDeleteDialogVisible(true)}
-          icon="delete"
-        >
-          删除笔记
-        </Button>
+      <View style={styles.footer}>
+        <Text variant="bodySmall" style={styles.metaText}>
+          {formatDate(note.createdAt)}
+        </Text>
+        <Text variant="bodySmall" style={styles.metaText}>
+          {note.wordCount} 字
+        </Text>
+        <Text variant="bodySmall" style={styles.statusText}>
+          {isEditing
+            ? saveStatus === 'saving'
+              ? '保存中...'
+              : saveStatus === 'saved'
+                ? '已保存'
+                : ''
+            : ''}
+        </Text>
       </View>
-
-      <Portal>
-        <Dialog
-          visible={deleteDialogVisible}
-          onDismiss={() => setDeleteDialogVisible(false)}
-        >
-          <Dialog.Title>确认删除</Dialog.Title>
-          <Dialog.Content>
-            <Text variant="bodyMedium">确定要删除这条笔记吗？此操作无法撤销。</Text>
-          </Dialog.Content>
-          <Dialog.Actions>
-            <Button onPress={() => setDeleteDialogVisible(false)}>取消</Button>
-            <Button onPress={handleDelete} textColor="#f44336">
-              删除
-            </Button>
-          </Dialog.Actions>
-        </Dialog>
-      </Portal>
-    </View>
+    </KeyboardAvoidingView>
   );
 }
 
@@ -102,30 +143,43 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  scrollView: {
-    flex: 1,
-    padding: 16,
-  },
   contentCard: {
+    flex: 1,
+    margin: 16,
     padding: 16,
     borderRadius: 12,
     backgroundColor: '#fff',
   },
-  content: {
+  editInput: {
+    flex: 1,
+    fontSize: 16,
     lineHeight: 24,
+    color: '#212121',
   },
-  meta: {
-    marginTop: 16,
-    paddingHorizontal: 4,
+  readContent: {
+    flex: 1,
   },
-  metaText: {
-    color: '#757575',
-    marginBottom: 4,
+  readText: {
+    fontSize: 16,
+    lineHeight: 24,
+    color: '#212121',
   },
-  actions: {
-    padding: 16,
+  footer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 10,
     borderTopWidth: 1,
     borderTopColor: '#e0e0e0',
     backgroundColor: '#fff',
+  },
+  metaText: {
+    color: '#9e9e9e',
+  },
+  statusText: {
+    color: '#64B5F6',
+    minWidth: 56,
+    textAlign: 'right',
   },
 });
