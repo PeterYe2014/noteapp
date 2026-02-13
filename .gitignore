@@ -39,3 +39,9 @@ yarn-error.*
 # generated native folders
 /ios
 /android
+
+# ai tools
+.claude/
+
+# test report
+coverage/
