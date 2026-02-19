@@ -1,27 +1,39 @@
 import { Tabs } from 'expo-router';
-import { Icon } from 'react-native-paper';
+import { Ionicons } from '@expo/vector-icons';
 
 export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: '#6200EE',
-        tabBarInactiveTintColor: '#757575',
-        headerStyle: {
-          backgroundColor: '#6200EE',
+        tabBarActiveTintColor: '#007AFF',
+        tabBarInactiveTintColor: '#8E8E93',
+        tabBarStyle: {
+          backgroundColor: 'rgba(242, 242, 247, 0.94)',
+          borderTopWidth: 0.5,
+          borderTopColor: 'rgba(60, 60, 67, 0.12)',
+          elevation: 0,
         },
-        headerTintColor: '#fff',
+        tabBarLabelStyle: {
+          fontSize: 10,
+          fontWeight: '500',
+        },
+        headerStyle: {
+          backgroundColor: '#F2F2F7',
+        },
+        headerShadowVisible: false,
         headerTitleStyle: {
-          fontWeight: 'bold',
+          fontWeight: '600',
+          fontSize: 17,
+          color: '#1C1C1E',
         },
       }}
     >
       <Tabs.Screen
         name="index"
         options={{
-          title: '首页',
-          tabBarIcon: ({ color, size }) => (
-            <Icon source="home" color={color} size={size} />
+          title: '笔记',
+          tabBarIcon: ({ color, size, focused }) => (
+            <Ionicons name={focused ? 'document-text' : 'document-text-outline'} color={color} size={size} />
           ),
         }}
       />
@@ -29,8 +41,8 @@ export default function TabLayout() {
         name="record"
         options={{
           title: '录音',
-          tabBarIcon: ({ color, size }) => (
-            <Icon source="microphone" color={color} size={size} />
+          tabBarIcon: ({ color, size, focused }) => (
+            <Ionicons name={focused ? 'mic' : 'mic-outline'} color={color} size={size} />
           ),
         }}
       />
@@ -38,8 +50,8 @@ export default function TabLayout() {
         name="settings"
         options={{
           title: '设置',
-          tabBarIcon: ({ color, size }) => (
-            <Icon source="cog" color={color} size={size} />
+          tabBarIcon: ({ color, size, focused }) => (
+            <Ionicons name={focused ? 'settings' : 'settings-outline'} color={color} size={size} />
           ),
         }}
       />
