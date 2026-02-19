@@ -1,6 +1,15 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { View, StyleSheet, TextInput, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
-import { Text, Surface, IconButton } from 'react-native-paper';
+import {
+  View,
+  StyleSheet,
+  TextInput,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  TouchableOpacity,
+  Text as RNText,
+} from 'react-native';
+import { Text } from 'react-native-paper';
 import { useLocalSearchParams, useNavigation } from 'expo-router';
 import { useNoteStore } from '../../src/store/noteStore';
 
@@ -29,11 +38,13 @@ export default function NoteDetailScreen() {
     navigation.setOptions({
       headerRight: () =>
         !isEditing ? (
-          <IconButton
-            icon="pencil"
-            size={22}
+          <TouchableOpacity
             onPress={() => setIsEditing(true)}
-          />
+            style={styles.headerButton}
+            activeOpacity={0.6}
+          >
+            <RNText style={styles.headerButtonText}>编辑</RNText>
+          </TouchableOpacity>
         ) : null,
     });
   }, [navigation, isEditing]);
@@ -69,7 +80,7 @@ export default function NoteDetailScreen() {
   if (!note) {
     return (
       <View style={styles.centered}>
-        <Text variant="bodyLarge">笔记不存在</Text>
+        <Text style={styles.notFoundText}>笔记不存在</Text>
       </View>
     );
   }
@@ -91,7 +102,7 @@ export default function NoteDetailScreen() {
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
     >
-      <Surface style={styles.contentCard} elevation={1}>
+      <View style={styles.contentCard}>
         {isEditing ? (
           <TextInput
             style={styles.editInput}
@@ -100,34 +111,26 @@ export default function NoteDetailScreen() {
             multiline
             textAlignVertical="top"
             placeholder="输入笔记内容..."
-            placeholderTextColor="#9e9e9e"
+            placeholderTextColor="#C7C7CC"
             autoFocus
           />
         ) : (
-          <ScrollView style={styles.readContent}>
-            <Text variant="bodyLarge" style={styles.readText}>
-              {note.content}
-            </Text>
+          <ScrollView style={styles.readContent} showsVerticalScrollIndicator={false}>
+            <Text style={styles.readText}>{note.content}</Text>
           </ScrollView>
         )}
-      </Surface>
+      </View>
 
       <View style={styles.footer}>
-        <Text variant="bodySmall" style={styles.metaText}>
-          {formatDate(note.createdAt)}
-        </Text>
-        <Text variant="bodySmall" style={styles.metaText}>
-          {note.wordCount} 字
-        </Text>
-        <Text variant="bodySmall" style={styles.statusText}>
-          {isEditing
-            ? saveStatus === 'saving'
-              ? '保存中...'
-              : saveStatus === 'saved'
-                ? '已保存'
-                : ''
-            : ''}
-        </Text>
+        <Text style={styles.metaText}>{formatDate(note.createdAt)}</Text>
+        <View style={styles.footerRight}>
+          <Text style={styles.metaText}>{note.wordCount} 字</Text>
+          {isEditing && saveStatus !== 'idle' && (
+            <Text style={[styles.statusText, saveStatus === 'saved' && styles.statusSaved]}>
+              {saveStatus === 'saving' ? '保存中' : '已保存'}
+            </Text>
+          )}
+        </View>
       </View>
     </KeyboardAvoidingView>
   );
@@ -136,50 +139,80 @@ export default function NoteDetailScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#F2F2F7',
   },
   centered: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: '#F2F2F7',
+  },
+  notFoundText: {
+    fontSize: 16,
+    color: '#8E8E93',
+  },
+  headerButton: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+  },
+  headerButtonText: {
+    fontSize: 17,
+    color: '#007AFF',
+    fontWeight: '400',
   },
   contentCard: {
     flex: 1,
     margin: 16,
+    marginBottom: 0,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
     padding: 16,
-    borderRadius: 12,
-    backgroundColor: '#fff',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.04,
+    shadowRadius: 12,
+    elevation: 2,
   },
   editInput: {
     flex: 1,
     fontSize: 16,
-    lineHeight: 24,
-    color: '#212121',
+    lineHeight: 26,
+    color: '#1C1C1E',
+    fontWeight: '400',
   },
   readContent: {
     flex: 1,
   },
   readText: {
     fontSize: 16,
-    lineHeight: 24,
-    color: '#212121',
+    lineHeight: 26,
+    color: '#1C1C1E',
+    fontWeight: '400',
   },
   footer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: 20,
-    paddingVertical: 10,
-    borderTopWidth: 1,
-    borderTopColor: '#e0e0e0',
-    backgroundColor: '#fff',
+    paddingVertical: 12,
+    marginTop: 4,
+    marginBottom: 8,
+  },
+  footerRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
   },
   metaText: {
-    color: '#9e9e9e',
+    fontSize: 12,
+    color: '#8E8E93',
+    fontWeight: '400',
   },
   statusText: {
-    color: '#64B5F6',
-    minWidth: 56,
-    textAlign: 'right',
+    fontSize: 12,
+    color: '#8E8E93',
+  },
+  statusSaved: {
+    color: '#34C759',
   },
 });
