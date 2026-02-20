@@ -9,8 +9,12 @@ const theme = {
   ...MD3LightTheme,
   colors: {
     ...MD3LightTheme.colors,
-    primary: '#6200EE',
-    secondary: '#03DAC6',
+    primary: '#007AFF',
+    secondary: '#8E8E93',
+    background: '#F2F2F7',
+    surface: '#FFFFFF',
+    onBackground: '#1C1C1E',
+    onSurface: '#1C1C1E',
   },
 };
 
@@ -30,6 +34,10 @@ export default function RootLayout() {
               options={{
                 title: '笔记详情',
                 headerBackTitle: '返回',
+                headerStyle: { backgroundColor: '#F2F2F7' },
+                headerShadowVisible: false,
+                headerTitleStyle: { color: '#1C1C1E', fontWeight: '600' },
+                headerTintColor: '#007AFF',
               }}
             />
           </Stack>

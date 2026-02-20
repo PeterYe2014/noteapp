@@ -1,6 +1,16 @@
 import { useEffect, useCallback, useState, useRef } from 'react';
-import { View, FlatList, StyleSheet, RefreshControl, Animated, Alert } from 'react-native';
-import { Text, Card, ActivityIndicator, Portal, Dialog, Button } from 'react-native-paper';
+import {
+  View,
+  FlatList,
+  StyleSheet,
+  RefreshControl,
+  Animated,
+  Alert,
+  TouchableOpacity,
+  Text as RNText,
+} from 'react-native';
+import { Text, ActivityIndicator, Portal, Dialog, Button } from 'react-native-paper';
+import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { Swipeable } from 'react-native-gesture-handler';
 import { useNoteStore } from '../../src/store/noteStore';
@@ -20,14 +30,19 @@ function SwipeableNoteCard({
   const swipeableRef = useRef<Swipeable>(null);
 
   const formatDate = (timestamp: number) => {
+    const now = Date.now();
+    const diff = now - timestamp;
+    const minutes = Math.floor(diff / 60000);
+    const hours = Math.floor(diff / 3600000);
+    const days = Math.floor(diff / 86400000);
+
+    if (minutes < 1) return '刚刚';
+    if (minutes < 60) return `${minutes} 分钟前`;
+    if (hours < 24) return `${hours} 小时前`;
+    if (days < 7) return `${days} 天前`;
+
     const date = new Date(timestamp);
-    return date.toLocaleDateString('zh-CN', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
+    return date.toLocaleDateString('zh-CN', { month: 'short', day: 'numeric' });
   };
 
   const renderRightActions = (
@@ -42,28 +57,26 @@ function SwipeableNoteCard({
 
     return (
       <Animated.View style={[styles.swipeActions, { transform: [{ translateX }] }]}>
-        <Animated.View style={styles.swipeButtonEdit}>
-          <Text
-            style={styles.swipeButtonText}
-            onPress={() => {
-              swipeableRef.current?.close();
-              onEdit();
-            }}
-          >
-            编辑
-          </Text>
-        </Animated.View>
-        <Animated.View style={styles.swipeButtonDelete}>
-          <Text
-            style={styles.swipeButtonText}
-            onPress={() => {
-              swipeableRef.current?.close();
-              onDelete();
-            }}
-          >
-            删除
-          </Text>
-        </Animated.View>
+        <TouchableOpacity
+          style={styles.swipeButtonEdit}
+          onPress={() => {
+            swipeableRef.current?.close();
+            onEdit();
+          }}
+          activeOpacity={0.8}
+        >
+          <RNText style={styles.swipeButtonText}>编辑</RNText>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.swipeButtonDelete}
+          onPress={() => {
+            swipeableRef.current?.close();
+            onDelete();
+          }}
+          activeOpacity={0.8}
+        >
+          <RNText style={styles.swipeButtonText}>删除</RNText>
+        </TouchableOpacity>
       </Animated.View>
     );
   };
@@ -75,21 +88,18 @@ function SwipeableNoteCard({
       overshootRight={false}
       rightThreshold={40}
     >
-      <Card style={styles.card} onPress={onPress}>
-        <Card.Content>
-          <Text variant="bodyLarge" numberOfLines={2} style={styles.content}>
-            {item.content}
-          </Text>
-          <View style={styles.meta}>
-            <Text variant="bodySmall" style={styles.date}>
-              {formatDate(item.createdAt)}
-            </Text>
-            <Text variant="bodySmall" style={styles.wordCount}>
-              {item.wordCount} 字
-            </Text>
-          </View>
-        </Card.Content>
-      </Card>
+      <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.7}>
+        <Text
+          numberOfLines={2}
+          style={styles.cardContent}
+        >
+          {item.content}
+        </Text>
+        <View style={styles.cardMeta}>
+          <Text style={styles.cardDate}>{formatDate(item.createdAt)}</Text>
+          <Text style={styles.cardWordCount}>{item.wordCount} 字</Text>
+        </View>
+      </TouchableOpacity>
     </Swipeable>
   );
 }
@@ -124,7 +134,7 @@ export default function HomeScreen() {
   if (isLoading) {
     return (
       <View style={styles.centered}>
-        <ActivityIndicator size="large" />
+        <ActivityIndicator size="large" color="#007AFF" />
       </View>
     );
   }
@@ -132,12 +142,9 @@ export default function HomeScreen() {
   if (notes.length === 0) {
     return (
       <View style={styles.centered}>
-        <Text variant="bodyLarge" style={styles.emptyText}>
-          暂无笔记
-        </Text>
-        <Text variant="bodyMedium" style={styles.emptyHint}>
-          点击"录音"开始创建语音笔记
-        </Text>
+        <Ionicons name="mic-outline" size={48} color="#C7C7CC" style={styles.emptyIcon} />
+        <Text style={styles.emptyText}>还没有笔记</Text>
+        <Text style={styles.emptyHint}>前往录音页开始记录</Text>
       </View>
     );
   }
@@ -149,7 +156,11 @@ export default function HomeScreen() {
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.list}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor="#007AFF"
+          />
         }
         renderItem={({ item }) => (
           <SwipeableNoteCard
@@ -165,14 +176,20 @@ export default function HomeScreen() {
         <Dialog
           visible={deleteTarget !== null}
           onDismiss={() => setDeleteTarget(null)}
+          style={styles.dialog}
         >
-          <Dialog.Title>确认删除</Dialog.Title>
+          <Dialog.Title style={styles.dialogTitle}>删除笔记</Dialog.Title>
           <Dialog.Content>
-            <Text variant="bodyMedium">确定要删除这条笔记吗？此操作无法撤销。</Text>
+            <Text style={styles.dialogContent}>此操作无法撤销。</Text>
           </Dialog.Content>
           <Dialog.Actions>
-            <Button onPress={() => setDeleteTarget(null)}>取消</Button>
-            <Button onPress={handleDelete} textColor="#E57373">
+            <Button
+              onPress={() => setDeleteTarget(null)}
+              textColor="#8E8E93"
+            >
+              取消
+            </Button>
+            <Button onPress={handleDelete} textColor="#FF3B30">
               删除
             </Button>
           </Dialog.Actions>
@@ -185,68 +202,99 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#F2F2F7',
   },
   centered: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#F2F2F7',
+    gap: 8,
   },
   list: {
     padding: 16,
+    paddingTop: 12,
   },
   card: {
-    marginBottom: 12,
-    backgroundColor: '#fff',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 12,
+    elevation: 2,
   },
-  content: {
-    marginBottom: 8,
+  cardContent: {
+    fontSize: 15,
+    lineHeight: 22,
+    color: '#1C1C1E',
+    marginBottom: 10,
+    fontWeight: '400',
   },
-  meta: {
+  cardMeta: {
     flexDirection: 'row',
     justifyContent: 'space-between',
   },
-  date: {
-    color: '#757575',
+  cardDate: {
+    fontSize: 12,
+    color: '#8E8E93',
+    fontWeight: '400',
   },
-  wordCount: {
-    color: '#757575',
+  cardWordCount: {
+    fontSize: 12,
+    color: '#8E8E93',
+    fontWeight: '400',
   },
-  emptyText: {
-    color: '#757575',
+  emptyIcon: {
     marginBottom: 8,
   },
+  emptyText: {
+    fontSize: 17,
+    fontWeight: '600',
+    color: '#1C1C1E',
+  },
   emptyHint: {
-    color: '#9e9e9e',
+    fontSize: 14,
+    color: '#8E8E93',
   },
   swipeActions: {
     flexDirection: 'row',
     alignItems: 'stretch',
-    marginBottom: 12,
-    borderRadius: 12,
+    marginBottom: 10,
+    borderRadius: 16,
     overflow: 'hidden',
     marginLeft: 8,
   },
   swipeButtonEdit: {
-    backgroundColor: '#64B5F6',
+    backgroundColor: 'rgba(0, 122, 255, 0.85)',
     justifyContent: 'center',
     alignItems: 'center',
     width: 76,
-    borderTopLeftRadius: 12,
-    borderBottomLeftRadius: 12,
   },
   swipeButtonDelete: {
-    backgroundColor: '#E57373',
+    backgroundColor: 'rgba(255, 59, 48, 0.85)',
     justifyContent: 'center',
     alignItems: 'center',
     width: 76,
-    borderTopRightRadius: 12,
-    borderBottomRightRadius: 12,
   },
   swipeButtonText: {
     color: '#fff',
     fontWeight: '600',
-    fontSize: 15,
+    fontSize: 14,
+  },
+  dialog: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 16,
+  },
+  dialogTitle: {
+    fontSize: 17,
+    fontWeight: '600',
+    color: '#1C1C1E',
+  },
+  dialogContent: {
+    fontSize: 14,
+    color: '#8E8E93',
   },
 });
