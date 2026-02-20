@@ -9,10 +9,12 @@ import {
   Platform,
   TouchableOpacity,
   Animated,
+  ScrollView,
   Text as RNText,
 } from 'react-native';
 import { Text } from 'react-native-paper';
 import { Ionicons } from '@expo/vector-icons';
+import Markdown from 'react-native-markdown-display';
 import { useRouter } from 'expo-router';
 import { useNoteStore } from '../../src/store/noteStore';
 
@@ -20,6 +22,7 @@ export default function RecordScreen() {
   const [isRecording, setIsRecording] = useState(false);
   const [content, setContent] = useState('');
   const [isSaving, setIsSaving] = useState(false);
+  const [showPreview, setShowPreview] = useState(false);
   const router = useRouter();
   const { addNote } = useNoteStore();
 
@@ -71,7 +74,7 @@ export default function RecordScreen() {
 
   const handleRecordPress = () => {
     setIsRecording(!isRecording);
-    // TODO: M3 实现语音识别功能
+    // TODO: 实现语音识别功能
   };
 
   const handleSave = async () => {
@@ -85,6 +88,7 @@ export default function RecordScreen() {
     try {
       await addNote(trimmed);
       setContent('');
+      setShowPreview(false);
       Keyboard.dismiss();
       router.navigate('/');
     } catch {
@@ -94,6 +98,8 @@ export default function RecordScreen() {
     }
   };
 
+  const hasContent = content.trim().length > 0;
+
   return (
     <KeyboardAvoidingView
       style={styles.container}
@@ -101,10 +107,36 @@ export default function RecordScreen() {
       keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
     >
       <View style={styles.inputArea}>
+        <View style={styles.toolbar}>
+          <Text style={styles.toolbarLabel}>
+            {showPreview ? 'Markdown 预览' : '编写 Markdown'}
+          </Text>
+          {hasContent && !isRecording && (
+            <TouchableOpacity
+              onPress={() => setShowPreview(!showPreview)}
+              style={styles.previewToggle}
+              activeOpacity={0.6}
+            >
+              <Ionicons
+                name={showPreview ? 'create-outline' : 'eye-outline'}
+                size={20}
+                color="#007AFF"
+              />
+              <RNText style={styles.previewToggleText}>
+                {showPreview ? '编辑' : '预览'}
+              </RNText>
+            </TouchableOpacity>
+          )}
+        </View>
+
         {isRecording ? (
           <View style={styles.recordingPlaceholder}>
             <Text style={styles.recordingText}>正在聆听...</Text>
           </View>
+        ) : showPreview ? (
+          <ScrollView style={styles.previewScroll} showsVerticalScrollIndicator={false}>
+            <Markdown style={markdownStyles}>{content}</Markdown>
+          </ScrollView>
         ) : (
           <TextInput
             style={styles.textInput}
@@ -119,7 +151,7 @@ export default function RecordScreen() {
       </View>
 
       <View style={styles.bottomArea}>
-        {content.trim().length > 0 && !isRecording && (
+        {hasContent && !isRecording && (
           <TouchableOpacity
             style={styles.saveButton}
             onPress={handleSave}
@@ -156,12 +188,81 @@ export default function RecordScreen() {
         </View>
 
         <Text style={styles.hint}>
-          {isRecording ? '点击停止录音' : content.trim().length > 0 ? '' : '输入文字或点击麦克风录音'}
+          {isRecording ? '点击停止录音' : hasContent ? '' : '输入文字或点击麦克风录音'}
         </Text>
       </View>
     </KeyboardAvoidingView>
   );
 }
+
+const markdownStyles = {
+  body: {
+    fontSize: 16,
+    lineHeight: 26,
+    color: '#1C1C1E',
+  },
+  heading1: {
+    fontSize: 26,
+    fontWeight: '700' as const,
+    color: '#1C1C1E',
+    marginTop: 16,
+    marginBottom: 8,
+  },
+  heading2: {
+    fontSize: 22,
+    fontWeight: '600' as const,
+    color: '#1C1C1E',
+    marginTop: 14,
+    marginBottom: 6,
+  },
+  heading3: {
+    fontSize: 18,
+    fontWeight: '600' as const,
+    color: '#1C1C1E',
+    marginTop: 12,
+    marginBottom: 4,
+  },
+  strong: {
+    fontWeight: '700' as const,
+  },
+  em: {
+    fontStyle: 'italic' as const,
+  },
+  code_inline: {
+    fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
+    fontSize: 14,
+    backgroundColor: '#F2F2F7',
+    color: '#007AFF',
+    borderRadius: 4,
+  },
+  fence: {
+    fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
+    fontSize: 14,
+    backgroundColor: '#F2F2F7',
+    padding: 12,
+    borderRadius: 8,
+    color: '#1C1C1E',
+    marginVertical: 8,
+  },
+  blockquote: {
+    borderLeftWidth: 3,
+    borderLeftColor: '#007AFF',
+    paddingLeft: 12,
+    marginLeft: 0,
+    opacity: 0.8,
+  },
+  list_item: {
+    marginVertical: 2,
+  },
+  link: {
+    color: '#007AFF',
+  },
+  hr: {
+    backgroundColor: 'rgba(60, 60, 67, 0.12)',
+    height: 1,
+    marginVertical: 16,
+  },
+};
 
 const styles = StyleSheet.create({
   container: {
@@ -181,6 +282,34 @@ const styles = StyleSheet.create({
     shadowRadius: 12,
     elevation: 2,
   },
+  toolbar: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+    paddingBottom: 10,
+    borderBottomWidth: 0.5,
+    borderBottomColor: 'rgba(60, 60, 67, 0.12)',
+  },
+  toolbarLabel: {
+    fontSize: 12,
+    color: '#8E8E93',
+    fontWeight: '500',
+  },
+  previewToggle: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 8,
+    backgroundColor: 'rgba(0, 122, 255, 0.08)',
+  },
+  previewToggleText: {
+    fontSize: 13,
+    color: '#007AFF',
+    fontWeight: '500',
+  },
   recordingPlaceholder: {
     flex: 1,
     justifyContent: 'center',
@@ -197,6 +326,9 @@ const styles = StyleSheet.create({
     lineHeight: 26,
     color: '#1C1C1E',
     fontWeight: '400',
+  },
+  previewScroll: {
+    flex: 1,
   },
   bottomArea: {
     alignItems: 'center',

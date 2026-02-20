@@ -40,9 +40,9 @@ export default function TabLayout() {
       <Tabs.Screen
         name="record"
         options={{
-          title: '录音',
+          title: '新建',
           tabBarIcon: ({ color, size, focused }) => (
-            <Ionicons name={focused ? 'mic' : 'mic-outline'} color={color} size={size} />
+            <Ionicons name={focused ? 'create' : 'create-outline'} color={color} size={size} />
           ),
         }}
       />

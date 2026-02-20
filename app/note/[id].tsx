@@ -10,6 +10,7 @@ import {
   Text as RNText,
 } from 'react-native';
 import { Text } from 'react-native-paper';
+import Markdown from 'react-native-markdown-display';
 import { useLocalSearchParams, useNavigation } from 'expo-router';
 import { useNoteStore } from '../../src/store/noteStore';
 
@@ -34,27 +35,6 @@ export default function NoteDetailScreen() {
     }
   }, [note?.id]);
 
-  useEffect(() => {
-    navigation.setOptions({
-      headerRight: () =>
-        !isEditing ? (
-          <TouchableOpacity
-            onPress={() => setIsEditing(true)}
-            style={styles.headerButton}
-            activeOpacity={0.6}
-          >
-            <RNText style={styles.headerButtonText}>编辑</RNText>
-          </TouchableOpacity>
-        ) : null,
-    });
-  }, [navigation, isEditing]);
-
-  useEffect(() => {
-    return () => {
-      if (timerRef.current) clearTimeout(timerRef.current);
-    };
-  }, []);
-
   const doSave = useCallback(async (text: string) => {
     const trimmed = text.trim();
     if (!trimmed || trimmed === lastSavedRef.current) return;
@@ -68,6 +48,41 @@ export default function NoteDetailScreen() {
       setSaveStatus('idle');
     }
   }, [id, updateNote]);
+
+  const handleSwitchToPreview = useCallback(() => {
+    setIsEditing(false);
+    if (timerRef.current) clearTimeout(timerRef.current);
+    doSave(content);
+  }, [content, doSave]);
+
+  useEffect(() => {
+    navigation.setOptions({
+      headerRight: () =>
+        isEditing ? (
+          <TouchableOpacity
+            onPress={handleSwitchToPreview}
+            style={styles.headerButton}
+            activeOpacity={0.6}
+          >
+            <RNText style={styles.headerButtonText}>预览</RNText>
+          </TouchableOpacity>
+        ) : (
+          <TouchableOpacity
+            onPress={() => setIsEditing(true)}
+            style={styles.headerButton}
+            activeOpacity={0.6}
+          >
+            <RNText style={styles.headerButtonText}>编辑</RNText>
+          </TouchableOpacity>
+        ),
+    });
+  }, [navigation, isEditing, handleSwitchToPreview]);
+
+  useEffect(() => {
+    return () => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+    };
+  }, []);
 
   const handleChangeText = useCallback((text: string) => {
     setContent(text);
@@ -110,13 +125,13 @@ export default function NoteDetailScreen() {
             onChangeText={handleChangeText}
             multiline
             textAlignVertical="top"
-            placeholder="输入笔记内容..."
+            placeholder="输入 Markdown 内容..."
             placeholderTextColor="#C7C7CC"
             autoFocus
           />
         ) : (
           <ScrollView style={styles.readContent} showsVerticalScrollIndicator={false}>
-            <Text style={styles.readText}>{note.content}</Text>
+            <Markdown style={markdownStyles}>{content}</Markdown>
           </ScrollView>
         )}
       </View>
@@ -135,6 +150,75 @@ export default function NoteDetailScreen() {
     </KeyboardAvoidingView>
   );
 }
+
+const markdownStyles = {
+  body: {
+    fontSize: 16,
+    lineHeight: 26,
+    color: '#1C1C1E',
+  },
+  heading1: {
+    fontSize: 26,
+    fontWeight: '700' as const,
+    color: '#1C1C1E',
+    marginTop: 16,
+    marginBottom: 8,
+  },
+  heading2: {
+    fontSize: 22,
+    fontWeight: '600' as const,
+    color: '#1C1C1E',
+    marginTop: 14,
+    marginBottom: 6,
+  },
+  heading3: {
+    fontSize: 18,
+    fontWeight: '600' as const,
+    color: '#1C1C1E',
+    marginTop: 12,
+    marginBottom: 4,
+  },
+  strong: {
+    fontWeight: '700' as const,
+  },
+  em: {
+    fontStyle: 'italic' as const,
+  },
+  code_inline: {
+    fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
+    fontSize: 14,
+    backgroundColor: '#F2F2F7',
+    color: '#007AFF',
+    borderRadius: 4,
+  },
+  fence: {
+    fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
+    fontSize: 14,
+    backgroundColor: '#F2F2F7',
+    padding: 12,
+    borderRadius: 8,
+    color: '#1C1C1E',
+    marginVertical: 8,
+  },
+  blockquote: {
+    borderLeftWidth: 3,
+    borderLeftColor: '#007AFF',
+    paddingLeft: 12,
+    marginLeft: 0,
+    opacity: 0.8,
+  },
+  list_item: {
+    marginVertical: 2,
+  },
+  link: {
+    color: '#007AFF',
+  },
+  hr: {
+    backgroundColor: 'rgba(60, 60, 67, 0.12)',
+    height: 1,
+    marginVertical: 16,
+  },
+};
 
 const styles = StyleSheet.create({
   container: {
@@ -182,12 +266,6 @@ const styles = StyleSheet.create({
   },
   readContent: {
     flex: 1,
-  },
-  readText: {
-    fontSize: 16,
-    lineHeight: 26,
-    color: '#1C1C1E',
-    fontWeight: '400',
   },
   footer: {
     flexDirection: 'row',
