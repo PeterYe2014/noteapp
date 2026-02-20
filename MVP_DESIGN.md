@@ -59,7 +59,36 @@ interface Note {
 }
 ```
 
-## 6. 页面结构
+## 6. 仓库结构
+
+```
+noteapp/
+├── app/                    # Expo Router 页面
+│   ├── (tabs)/             # Tab 导航页面
+│   │   ├── _layout.tsx     # Tab 导航配置
+│   │   ├── index.tsx       # 首页（笔记列表）
+│   │   ├── record.tsx      # 录音页
+│   │   └── settings.tsx    # 设置页
+│   ├── note/
+│   │   └── [id].tsx        # 笔记详情页
+│   └── _layout.tsx         # 根布局
+├── src/
+│   ├── db/
+│   │   └── database.ts     # SQLite 数据库配置
+│   ├── store/
+│   │   └── noteStore.ts    # Zustand 状态管理
+│   └── types/
+│       └── note.ts         # TypeScript 类型定义
+├── assets/                 # 静态资源
+├── app.json               # Expo 配置
+├── package.json           # 依赖配置
+├── tsconfig.json          # TypeScript 配置
+├── CLAUDE.md              # AI 助手指南
+├── MVP_DESIGN.md          # MVP 设计文档（本文件）
+└── README.md              # 项目描述
+```
+
+## 7. 页面结构
 
 - **首页**：笔记列表（按时间倒序）
 - **录音页**：麦克风按钮 + 实时转写显示
@@ -67,7 +96,7 @@ interface Note {
 
 底部 Tab 导航：首页 | 录音 | 设置（预留）
 
-## 7. 开发计划（4 周）
+## 8. 开发计划（4 周）
 
 | 周次 | 目标 | 交付物 |
 |------|------|--------|
@@ -78,14 +107,29 @@ interface Note {
 
 ### 里程碑
 
-| 里程碑 | 时间 | 验收标准 |
-|--------|------|----------|
-| M1 | 第 1 周 | 应用骨架运行，导航正常 |
-| M2 | 第 2 周 | 笔记 CRUD 功能可用 |
-| M3 | 第 3 周 | 语音转文字并保存成功 |
-| M4 | 第 4 周 | 提交至应用商店 |
+| 里程碑 | 时间 | 验收标准 | 状态 |
+|--------|------|----------|------|
+| M1 | 第 1 周 | 应用骨架运行，导航正常 | ✅ 已完成 |
+| M2 | 第 2 周 | 笔记 CRUD 功能可用 | ✅ 已完成 |
+| M3 | 第 3 周 | 语音转文字并保存成功 | 🔲 待开始 |
+| M4 | 第 4 周 | 提交至应用商店 | 🔲 待开始 |
 
-## 8. 关键风险
+### 当前状态
+
+**M2 里程碑已完成**：笔记 CRUD 功能可用。
+
+- 项目已初始化（Expo + TypeScript）
+- 底部 Tab 导航已配置
+- UI 组件库已集成（React Native Paper）
+- 数据库已配置（expo-sqlite）
+- 基础页面已创建（首页、录音、设置、详情页）
+- 笔记创建功能（文字输入，M3 将增加语音输入）
+- 笔记列表展示（按时间倒序，支持下拉刷新）
+- 笔记详情查看
+- 笔记删除（含确认对话框）
+- 数据持久化（SQLite 本地存储）
+
+## 9. 关键风险
 
 | 风险 | 缓解措施 |
 |------|----------|
@@ -93,17 +137,28 @@ interface Note {
 | App Store 审核 | 确保功能完整稳定，遵守指南 |
 | 跨平台兼容性 | 使用 Expo 封装 API，双平台测试 |
 
-## 9. 发布
+## 10. 发布
 
 - **构建**：Expo EAS Build
 - **iOS**：Apple Developer ($99/年) → App Store Connect
 - **Android**：Google Play Developer ($25) → Play Console
 
-## 10. 隐私说明
+## 11. 特别注意事项
 
+### 音频/语音功能
+- 优雅地处理麦克风权限
+- 在录制期间提供视觉反馈
+- 使用系统语音识别 API（iOS: Apple Speech, Android: Google Speech）
+
+### 隐私和安全
 - 笔记数据仅存储在设备本地
 - 语音识别使用系统 API（iOS: Apple Speech, Android: Google Speech）
 - 首次使用需告知用户语音数据会发送至系统服务器
+
+### 无障碍访问
+- 为音频反馈提供视觉替代方案
+- 支持键盘导航
+- 确保屏幕阅读器兼容性
 
 ---
 
