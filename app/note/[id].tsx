@@ -187,7 +187,7 @@ const styles = StyleSheet.create({
   headerBtnText: {
     fontSize: 17,
     color: '#007AFF',
-    fontWeight: '400',
+    fontWeight: '600',
   },
   editor: {
     flex: 1,
