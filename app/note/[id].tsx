@@ -12,6 +12,9 @@ import {
 import Markdown from 'react-native-markdown-display';
 import { useLocalSearchParams, useNavigation } from 'expo-router';
 import { useNoteStore } from '../../src/store/noteStore';
+import FormatToolbar from '../../src/components/FormatToolbar';
+
+type Selection = { start: number; end: number };
 
 const AUTO_SAVE_DELAY = 800;
 
@@ -22,8 +25,10 @@ export default function NoteDetailScreen() {
   const [content, setContent] = useState('');
   const [isEditing, setIsEditing] = useState(edit === '1');
   const [saveStatus, setSaveStatus] = useState<'saved' | 'saving' | 'idle'>('idle');
+  const [selection, setSelection] = useState<Selection>({ start: 0, end: 0 });
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastSavedRef = useRef('');
+  const inputRef = useRef<TextInput>(null);
 
   const note = getNoteById(id);
 
@@ -81,6 +86,17 @@ export default function NoteDetailScreen() {
     timerRef.current = setTimeout(() => doSave(text), AUTO_SAVE_DELAY);
   }, [doSave]);
 
+  const handleFormatInsert = useCallback((before: string, after: string = '') => {
+    const { start, end } = selection;
+    const selectedText = content.substring(start, end);
+    const newText = content.substring(0, start) + before + selectedText + after + content.substring(end);
+    handleChangeText(newText);
+    setTimeout(() => {
+      const newCursorPos = start + before.length + selectedText.length + after.length;
+      inputRef.current?.setNativeProps({ selection: { start: newCursorPos, end: newCursorPos } });
+    }, 50);
+  }, [content, selection, handleChangeText]);
+
   if (!note) {
     return (
       <View style={styles.centered}>
@@ -101,20 +117,27 @@ export default function NoteDetailScreen() {
   return (
     <KeyboardAvoidingView
       style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0}
     >
       {isEditing ? (
-        <TextInput
-          style={styles.editor}
-          value={content}
-          onChangeText={handleChangeText}
-          multiline
-          textAlignVertical="top"
-          placeholder="输入 Markdown 内容..."
-          placeholderTextColor="#C7C7CC"
-          autoFocus
-        />
+        <>
+          <View style={styles.editorContainer}>
+            <TextInput
+              ref={inputRef}
+              style={styles.editor}
+              value={content}
+              onChangeText={handleChangeText}
+              multiline
+              textAlignVertical="top"
+              placeholder="输入 Markdown 内容..."
+              placeholderTextColor="#C7C7CC"
+              autoFocus
+              onSelectionChange={(e) => setSelection(e.nativeEvent.selection)}
+            />
+          </View>
+          <FormatToolbar onInsert={handleFormatInsert} />
+        </>
       ) : (
         <ScrollView style={styles.reader} contentContainerStyle={styles.readerContent} showsVerticalScrollIndicator={false}>
           <Markdown style={markdownStyles}>{content}</Markdown>
@@ -188,6 +211,9 @@ const styles = StyleSheet.create({
     fontSize: 17,
     color: '#007AFF',
     fontWeight: '600',
+  },
+  editorContainer: {
+    flex: 1,
   },
   editor: {
     flex: 1,

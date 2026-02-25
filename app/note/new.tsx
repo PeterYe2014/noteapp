@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import {
   View,
   StyleSheet,
@@ -14,16 +14,33 @@ import {
 import Markdown from 'react-native-markdown-display';
 import { useRouter, useNavigation } from 'expo-router';
 import { useNoteStore } from '../../src/store/noteStore';
+import FormatToolbar from '../../src/components/FormatToolbar';
+
+type Selection = { start: number; end: number };
 
 export default function NewNoteScreen() {
   const [content, setContent] = useState('');
   const [showPreview, setShowPreview] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [selection, setSelection] = useState<Selection>({ start: 0, end: 0 });
+  const inputRef = useRef<TextInput>(null);
   const router = useRouter();
   const navigation = useNavigation();
   const { addNote } = useNoteStore();
 
   const hasContent = content.trim().length > 0;
+
+  const handleFormatInsert = useCallback((before: string, after: string = '') => {
+    const { start, end } = selection;
+    const selectedText = content.substring(start, end);
+    const newText = content.substring(0, start) + before + selectedText + after + content.substring(end);
+    setContent(newText);
+    // 延迟设置光标位置
+    setTimeout(() => {
+      const newCursorPos = start + before.length + selectedText.length + after.length;
+      inputRef.current?.setNativeProps({ selection: { start: newCursorPos, end: newCursorPos } });
+    }, 50);
+  }, [content, selection]);
 
   const handleSave = useCallback(async () => {
     const trimmed = content.trim();
@@ -63,8 +80,8 @@ export default function NewNoteScreen() {
   return (
     <KeyboardAvoidingView
       style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0}
     >
       {hasContent && (
         <View style={styles.modeBar}>
@@ -98,16 +115,23 @@ export default function NewNoteScreen() {
           <Markdown style={markdownStyles}>{content}</Markdown>
         </ScrollView>
       ) : (
-        <TextInput
-          style={styles.editor}
-          placeholder="开始写作..."
-          placeholderTextColor="#C7C7CC"
-          multiline
-          value={content}
-          onChangeText={setContent}
-          textAlignVertical="top"
-          autoFocus
-        />
+        <>
+          <View style={styles.editorContainer}>
+            <TextInput
+              ref={inputRef}
+              style={styles.editor}
+              placeholder="开始写作..."
+              placeholderTextColor="#C7C7CC"
+              multiline
+              value={content}
+              onChangeText={setContent}
+              onSelectionChange={(e) => setSelection(e.nativeEvent.selection)}
+              textAlignVertical="top"
+              autoFocus
+            />
+          </View>
+          <FormatToolbar onInsert={handleFormatInsert} />
+        </>
       )}
     </KeyboardAvoidingView>
   );
@@ -170,6 +194,9 @@ const styles = StyleSheet.create({
   },
   modeTabTextActive: {
     color: '#1C1C1E',
+  },
+  editorContainer: {
+    flex: 1,
   },
   editor: {
     flex: 1,
