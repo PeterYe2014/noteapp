@@ -27,19 +27,18 @@ export default function RootLayout() {
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
         <PaperProvider theme={theme}>
-          <Stack>
+          <Stack
+            screenOptions={{
+              headerStyle: { backgroundColor: '#F2F2F7' },
+              headerShadowVisible: false,
+              headerTitleStyle: { color: '#1C1C1E', fontWeight: '600' },
+              headerTintColor: '#007AFF',
+              headerBackTitle: '返回',
+            }}
+          >
             <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-            <Stack.Screen
-              name="note/[id]"
-              options={{
-                title: '笔记详情',
-                headerBackTitle: '返回',
-                headerStyle: { backgroundColor: '#F2F2F7' },
-                headerShadowVisible: false,
-                headerTitleStyle: { color: '#1C1C1E', fontWeight: '600' },
-                headerTintColor: '#007AFF',
-              }}
-            />
+            <Stack.Screen name="note/[id]" options={{ title: '笔记详情' }} />
+            <Stack.Screen name="note/new" options={{ title: '新建笔记' }} />
           </Stack>
         </PaperProvider>
       </SafeAreaProvider>

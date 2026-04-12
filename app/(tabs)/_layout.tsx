@@ -1,5 +1,6 @@
-import { Tabs } from 'expo-router';
+import { Tabs, router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { TouchableOpacity } from 'react-native';
 
 export default function TabLayout() {
   return (
@@ -40,9 +41,16 @@ export default function TabLayout() {
       <Tabs.Screen
         name="record"
         options={{
-          title: '录音',
-          tabBarIcon: ({ color, size, focused }) => (
-            <Ionicons name={focused ? 'mic' : 'mic-outline'} color={color} size={size} />
+          title: '新建',
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="create-outline" color={color} size={size} />
+          ),
+          tabBarButton: (props) => (
+            <TouchableOpacity
+              {...props}
+              onPress={() => router.push('/note/new')}
+              activeOpacity={0.7}
+            />
           ),
         }}
       />
