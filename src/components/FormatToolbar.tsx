@@ -1,12 +1,13 @@
 import { View, StyleSheet, TouchableOpacity, Text as RNText } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { colors, spacing } from '../constants/theme';
 
 interface FormatToolbarProps {
   onInsert: (before: string, after?: string) => void;
 }
 
 type FormatAction = {
-  icon: keyof typeof MaterialCommunityIcons.glyphMap;
+  icon: string;
   label: string;
   before: string;
   after: string;
@@ -39,7 +40,7 @@ export default function FormatToolbar({ onInsert }: FormatToolbarProps) {
           <MaterialCommunityIcons
             name={action.icon}
             size={22}
-            color="#1C1C1E"
+            color={colors.text}
           />
         </TouchableOpacity>
       ))}
@@ -52,14 +53,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-around',
-    paddingHorizontal: 8,
-    paddingVertical: 8,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.sm,
     borderTopWidth: 0.5,
-    borderTopColor: 'rgba(60, 60, 67, 0.12)',
-    backgroundColor: '#FAFAFA',
+    borderTopColor: colors.border,
+    backgroundColor: colors.toolbar,
   },
   button: {
-    padding: 8,
+    padding: spacing.sm,
     borderRadius: 8,
     minWidth: 40,
     alignItems: 'center',

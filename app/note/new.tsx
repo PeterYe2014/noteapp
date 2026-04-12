@@ -1,7 +1,6 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import {
   View,
-  StyleSheet,
   TextInput,
   Alert,
   Keyboard,
@@ -15,14 +14,14 @@ import Markdown from 'react-native-markdown-display';
 import { useRouter, useNavigation } from 'expo-router';
 import { useNoteStore } from '../../src/store/noteStore';
 import FormatToolbar from '../../src/components/FormatToolbar';
-
-type Selection = { start: number; end: number };
+import { colors } from '../../src/constants/theme';
+import { noteScreen, markdownStyles, modeBar } from '../../src/styles/shared';
 
 export default function NewNoteScreen() {
   const [content, setContent] = useState('');
   const [showPreview, setShowPreview] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  const [selection, setSelection] = useState<Selection>({ start: 0, end: 0 });
+  const [selection, setSelection] = useState<{ start: number; end: number }>({ start: 0, end: 0 });
   const inputRef = useRef<TextInput>(null);
   const router = useRouter();
   const navigation = useNavigation();
@@ -66,10 +65,10 @@ export default function NewNoteScreen() {
           <TouchableOpacity
             onPress={handleSave}
             disabled={isSaving}
-            style={styles.headerBtn}
+            style={noteScreen.headerBtn}
             activeOpacity={0.6}
           >
-            <RNText style={[styles.headerBtnPrimary, isSaving && styles.dim]}>
+            <RNText style={[noteScreen.headerBtnPrimary, isSaving && noteScreen.dim]}>
               {isSaving ? '保存中' : '保存'}
             </RNText>
           </TouchableOpacity>
@@ -79,27 +78,27 @@ export default function NewNoteScreen() {
 
   return (
     <KeyboardAvoidingView
-      style={styles.container}
+      style={noteScreen.container}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0}
     >
       {hasContent && (
-        <View style={styles.modeBar}>
+        <View style={modeBar.container}>
           <TouchableOpacity
             onPress={() => setShowPreview(false)}
-            style={[styles.modeTab, !showPreview && styles.modeTabActive]}
+            style={[modeBar.tab, !showPreview && modeBar.tabActive]}
             activeOpacity={0.7}
           >
-            <RNText style={[styles.modeTabText, !showPreview && styles.modeTabTextActive]}>
+            <RNText style={[modeBar.tabText, !showPreview && modeBar.tabTextActive]}>
               编辑
             </RNText>
           </TouchableOpacity>
           <TouchableOpacity
             onPress={() => setShowPreview(true)}
-            style={[styles.modeTab, showPreview && styles.modeTabActive]}
+            style={[modeBar.tab, showPreview && modeBar.tabActive]}
             activeOpacity={0.7}
           >
-            <RNText style={[styles.modeTabText, showPreview && styles.modeTabTextActive]}>
+            <RNText style={[modeBar.tabText, showPreview && modeBar.tabTextActive]}>
               预览
             </RNText>
           </TouchableOpacity>
@@ -108,20 +107,20 @@ export default function NewNoteScreen() {
 
       {showPreview ? (
         <ScrollView
-          style={styles.reader}
-          contentContainerStyle={styles.readerContent}
+          style={noteScreen.reader}
+          contentContainerStyle={noteScreen.readerContent}
           showsVerticalScrollIndicator={false}
         >
           <Markdown style={markdownStyles}>{content}</Markdown>
         </ScrollView>
       ) : (
         <>
-          <View style={styles.editorContainer}>
+          <View style={noteScreen.editorContainer}>
             <TextInput
               ref={inputRef}
-              style={styles.editor}
+              style={noteScreen.editor}
               placeholder="开始写作..."
-              placeholderTextColor="#C7C7CC"
+              placeholderTextColor={colors.textTertiary}
               multiline
               value={content}
               onChangeText={setContent}
@@ -136,94 +135,3 @@ export default function NewNoteScreen() {
     </KeyboardAvoidingView>
   );
 }
-
-const markdownStyles = {
-  body: { fontSize: 16, lineHeight: 26, color: '#1C1C1E' },
-  heading1: { fontSize: 26, fontWeight: '700' as const, color: '#1C1C1E', marginTop: 16, marginBottom: 8 },
-  heading2: { fontSize: 22, fontWeight: '600' as const, color: '#1C1C1E', marginTop: 14, marginBottom: 6 },
-  heading3: { fontSize: 18, fontWeight: '600' as const, color: '#1C1C1E', marginTop: 12, marginBottom: 4 },
-  strong: { fontWeight: '700' as const },
-  em: { fontStyle: 'italic' as const },
-  code_inline: {
-    fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
-    fontSize: 14,
-    backgroundColor: '#F2F2F7',
-    color: '#007AFF',
-    borderRadius: 4,
-  },
-  fence: {
-    fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
-    fontSize: 14,
-    backgroundColor: '#F2F2F7',
-    padding: 12,
-    borderRadius: 8,
-    color: '#1C1C1E',
-    marginVertical: 8,
-  },
-  blockquote: { borderLeftWidth: 3, borderLeftColor: '#007AFF', paddingLeft: 12, marginLeft: 0, opacity: 0.8 },
-  list_item: { marginVertical: 2 },
-  link: { color: '#007AFF' },
-  hr: { backgroundColor: 'rgba(60, 60, 67, 0.12)', height: 1, marginVertical: 16 },
-};
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#FFFFFF',
-  },
-  modeBar: {
-    flexDirection: 'row',
-    paddingHorizontal: 20,
-    paddingVertical: 8,
-    gap: 4,
-    borderBottomWidth: 0.5,
-    borderBottomColor: 'rgba(60, 60, 67, 0.12)',
-  },
-  modeTab: {
-    paddingHorizontal: 12,
-    paddingVertical: 5,
-    borderRadius: 8,
-  },
-  modeTabActive: {
-    backgroundColor: '#F2F2F7',
-  },
-  modeTabText: {
-    fontSize: 13,
-    color: '#8E8E93',
-    fontWeight: '500',
-  },
-  modeTabTextActive: {
-    color: '#1C1C1E',
-  },
-  editorContainer: {
-    flex: 1,
-  },
-  editor: {
-    flex: 1,
-    paddingHorizontal: 20,
-    paddingTop: 16,
-    fontSize: 16,
-    lineHeight: 26,
-    color: '#1C1C1E',
-  },
-  reader: {
-    flex: 1,
-  },
-  readerContent: {
-    paddingHorizontal: 20,
-    paddingTop: 16,
-    paddingBottom: 16,
-  },
-  headerBtn: {
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-  },
-  headerBtnPrimary: {
-    fontSize: 17,
-    color: '#007AFF',
-    fontWeight: '600',
-  },
-  dim: {
-    opacity: 0.5,
-  },
-});

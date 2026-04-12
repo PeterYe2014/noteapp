@@ -8,8 +8,16 @@
 # 安装依赖
 npm install
 
-# 运行开发服务器（Expo）
+# 运行开发服务器（Expo）- 本地模式
 npx expo start
+
+# 运行开发服务器（LAN 模式 - 同一局域网可访问）
+npx expo start --lan
+
+# 运行开发服务器（Tunnel 模式 - 用于外网访问）
+# 注意：需要安装 @expo/ngrok 包 (npm install --save-dev @expo/ngrok)
+# 如果提示 "remote gone away"，可能是网络问题，请改用 --lan 模式
+npx expo start --tunnel
 
 # 运行 iOS 模拟器
 npx expo run:ios

@@ -1,17 +1,18 @@
 import { Tabs, router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { TouchableOpacity } from 'react-native';
+import { colors } from '../../src/constants/theme';
 
 export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: '#007AFF',
-        tabBarInactiveTintColor: '#8E8E93',
+        tabBarActiveTintColor: colors.primary,
+        tabBarInactiveTintColor: colors.textSecondary,
         tabBarStyle: {
           backgroundColor: 'rgba(242, 242, 247, 0.94)',
           borderTopWidth: 0.5,
-          borderTopColor: 'rgba(60, 60, 67, 0.12)',
+          borderTopColor: colors.border,
           elevation: 0,
         },
         tabBarLabelStyle: {
@@ -19,13 +20,13 @@ export default function TabLayout() {
           fontWeight: '500',
         },
         headerStyle: {
-          backgroundColor: '#F2F2F7',
+          backgroundColor: colors.background,
         },
         headerShadowVisible: false,
         headerTitleStyle: {
           fontWeight: '600',
           fontSize: 17,
-          color: '#1C1C1E',
+          color: colors.text,
         },
       }}
     >

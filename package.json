@@ -35,6 +35,7 @@
   "devDependencies": {
     "@babel/preset-env": "^7.29.0",
     "@babel/preset-typescript": "^7.28.5",
+    "@expo/ngrok": "^4.1.0",
     "@testing-library/jest-native": "^5.4.3",
     "@testing-library/react-native": "^13.3.3",
     "@types/expo__vector-icons": "^9.0.1",

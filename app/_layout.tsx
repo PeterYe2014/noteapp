@@ -4,17 +4,18 @@ import { PaperProvider, MD3LightTheme } from 'react-native-paper';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { initDatabase } from '../src/db/database';
+import { colors } from '../src/constants/theme';
 
 const theme = {
   ...MD3LightTheme,
   colors: {
     ...MD3LightTheme.colors,
-    primary: '#007AFF',
-    secondary: '#8E8E93',
-    background: '#F2F2F7',
-    surface: '#FFFFFF',
-    onBackground: '#1C1C1E',
-    onSurface: '#1C1C1E',
+    primary: colors.primary,
+    secondary: colors.textSecondary,
+    background: colors.background,
+    surface: colors.surface,
+    onBackground: colors.text,
+    onSurface: colors.text,
   },
 };
 
@@ -29,10 +30,10 @@ export default function RootLayout() {
         <PaperProvider theme={theme}>
           <Stack
             screenOptions={{
-              headerStyle: { backgroundColor: '#F2F2F7' },
+              headerStyle: { backgroundColor: colors.background },
               headerShadowVisible: false,
-              headerTitleStyle: { color: '#1C1C1E', fontWeight: '600' },
-              headerTintColor: '#007AFF',
+              headerTitleStyle: { color: colors.text, fontWeight: '600' },
+              headerTintColor: colors.primary,
               headerBackTitle: '返回',
             }}
           >
