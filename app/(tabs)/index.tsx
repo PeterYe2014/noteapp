@@ -107,7 +107,7 @@ export default function HomeScreen() {
   const router = useRouter();
   const { notes, isLoading, loadNotes, deleteNote } = useNoteStore();
   const [refreshing, setRefreshing] = useState(false);
-  const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<Note | null>(null);
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -122,7 +122,7 @@ export default function HomeScreen() {
   const handleDelete = async () => {
     if (!deleteTarget) return;
     try {
-      await deleteNote(deleteTarget);
+      await deleteNote(deleteTarget.id);
     } catch {
       Alert.alert('错误', '删除失败，请重试');
     } finally {
@@ -141,9 +141,9 @@ export default function HomeScreen() {
   if (notes.length === 0) {
     return (
       <View style={layout.centered}>
-        <Ionicons name="mic-outline" size={48} color={colors.textTertiary} style={emptyState.icon} />
+        <Ionicons name="create-outline" size={48} color={colors.textTertiary} style={emptyState.icon} />
         <Text style={emptyState.title}>还没有笔记</Text>
-        <Text style={emptyState.hint}>前往录音页开始记录</Text>
+        <Text style={emptyState.hint}>点击底部新建按钮开始写作</Text>
       </View>
     );
   }
@@ -166,7 +166,7 @@ export default function HomeScreen() {
             item={item}
             onPress={() => router.push(`/note/${item.id}`)}
             onEdit={() => router.push(`/note/${item.id}?edit=1`)}
-            onDelete={() => setDeleteTarget(item.id)}
+            onDelete={() => setDeleteTarget(item)}
           />
         )}
       />
@@ -179,7 +179,14 @@ export default function HomeScreen() {
         >
           <Dialog.Title style={dialog.title}>删除笔记</Dialog.Title>
           <Dialog.Content>
-            <Text style={dialog.content}>此操作无法撤销。</Text>
+            <Text style={dialog.content}>确定要删除这条笔记吗？此操作无法撤销。</Text>
+            {deleteTarget && (
+              <View style={styles.deletePreview}>
+                <Text style={styles.deletePreviewText} numberOfLines={3}>
+                  {deleteTarget.content}
+                </Text>
+              </View>
+            )}
           </Dialog.Content>
           <Dialog.Actions>
             <Button
@@ -202,5 +209,16 @@ const styles = StyleSheet.create({
   list: {
     padding: spacing.lg,
     paddingTop: 12,
+  },
+  deletePreview: {
+    marginTop: spacing.md,
+    padding: spacing.md,
+    backgroundColor: colors.background,
+    borderRadius: radius.sm,
+  },
+  deletePreviewText: {
+    fontSize: 14,
+    lineHeight: 20,
+    color: colors.textSecondary,
   },
 });

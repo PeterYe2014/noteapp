@@ -12,7 +12,7 @@ import Markdown from 'react-native-markdown-display';
 import { useLocalSearchParams, useNavigation } from 'expo-router';
 import { useNoteStore } from '../../src/store/noteStore';
 import FormatToolbar from '../../src/components/FormatToolbar';
-import { colors } from '../../src/constants/theme';
+import { colors, spacing, radius } from '../../src/constants/theme';
 import { noteScreen, markdownStyles } from '../../src/styles/shared';
 
 type Selection = { start: number; end: number };
@@ -61,16 +61,24 @@ export default function NoteDetailScreen() {
 
   useEffect(() => {
     navigation.setOptions({
-      headerRight: () =>
-        isEditing ? (
-          <TouchableOpacity onPress={handleSwitchToPreview} style={noteScreen.headerBtn} activeOpacity={0.6}>
-            <RNText style={noteScreen.headerBtnText}>完成</RNText>
+      headerRight: () => (
+        <View style={styles.segmentedControl}>
+          <TouchableOpacity
+            style={[styles.segment, isEditing && styles.segmentActive]}
+            onPress={() => setIsEditing(true)}
+            activeOpacity={0.8}
+          >
+            <RNText style={[styles.segmentText, isEditing && styles.segmentTextActive]}>编辑</RNText>
           </TouchableOpacity>
-        ) : (
-          <TouchableOpacity onPress={() => setIsEditing(true)} style={noteScreen.headerBtn} activeOpacity={0.6}>
-            <RNText style={noteScreen.headerBtnText}>编辑</RNText>
+          <TouchableOpacity
+            style={[styles.segment, !isEditing && styles.segmentActive]}
+            onPress={handleSwitchToPreview}
+            activeOpacity={0.8}
+          >
+            <RNText style={[styles.segmentText, !isEditing && styles.segmentTextActive]}>预览</RNText>
           </TouchableOpacity>
-        ),
+        </View>
+      ),
     });
   }, [navigation, isEditing, handleSwitchToPreview]);
 
@@ -159,3 +167,28 @@ export default function NoteDetailScreen() {
     </KeyboardAvoidingView>
   );
 }
+
+const styles = {
+  segmentedControl: {
+    flexDirection: 'row' as const,
+    backgroundColor: colors.background,
+    borderRadius: radius.sm,
+    padding: 2,
+  },
+  segment: {
+    paddingHorizontal: spacing.md,
+    paddingVertical: 4,
+    borderRadius: radius.xs,
+  },
+  segmentActive: {
+    backgroundColor: colors.surface,
+  },
+  segmentText: {
+    fontSize: 13,
+    fontWeight: '500' as const,
+    color: colors.textSecondary,
+  },
+  segmentTextActive: {
+    color: colors.text,
+  },
+};

@@ -9,18 +9,21 @@ import {
   ScrollView,
   TouchableOpacity,
   Text as RNText,
+  Animated,
 } from 'react-native';
 import Markdown from 'react-native-markdown-display';
 import { useRouter, useNavigation } from 'expo-router';
 import { useNoteStore } from '../../src/store/noteStore';
 import FormatToolbar from '../../src/components/FormatToolbar';
-import { colors } from '../../src/constants/theme';
+import { colors, spacing } from '../../src/constants/theme';
 import { noteScreen, markdownStyles, modeBar } from '../../src/styles/shared';
 
 export default function NewNoteScreen() {
   const [content, setContent] = useState('');
   const [showPreview, setShowPreview] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
+  const fadeAnim = useRef(new Animated.Value(0)).current;
   const [selection, setSelection] = useState<{ start: number; end: number }>({ start: 0, end: 0 });
   const inputRef = useRef<TextInput>(null);
   const router = useRouter();
@@ -41,22 +44,34 @@ export default function NewNoteScreen() {
     }, 50);
   }, [content, selection]);
 
+  const showSuccessToast = useCallback(() => {
+    setShowSuccess(true);
+    Animated.sequence([
+      Animated.timing(fadeAnim, { toValue: 1, duration: 200, useNativeDriver: true }),
+      Animated.delay(1500),
+      Animated.timing(fadeAnim, { toValue: 0, duration: 200, useNativeDriver: true }),
+    ]).start(() => setShowSuccess(false));
+  }, [fadeAnim]);
+
   const handleSave = useCallback(async () => {
     const trimmed = content.trim();
     if (!trimmed) return;
     setIsSaving(true);
     try {
       await addNote(trimmed);
-      setContent('');
-      setShowPreview(false);
-      Keyboard.dismiss();
-      router.back();
+      showSuccessToast();
+      setTimeout(() => {
+        setContent('');
+        setShowPreview(false);
+        Keyboard.dismiss();
+        router.back();
+      }, 800);
     } catch {
       Alert.alert('错误', '保存失败，请重试');
     } finally {
       setIsSaving(false);
     }
-  }, [content, addNote, router]);
+  }, [content, addNote, router, showSuccessToast]);
 
   useEffect(() => {
     navigation.setOptions({
@@ -82,37 +97,41 @@ export default function NewNoteScreen() {
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0}
     >
-      {hasContent && (
-        <View style={modeBar.container}>
-          <TouchableOpacity
-            onPress={() => setShowPreview(false)}
-            style={[modeBar.tab, !showPreview && modeBar.tabActive]}
-            activeOpacity={0.7}
-          >
-            <RNText style={[modeBar.tabText, !showPreview && modeBar.tabTextActive]}>
-              编辑
-            </RNText>
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => setShowPreview(true)}
-            style={[modeBar.tab, showPreview && modeBar.tabActive]}
-            activeOpacity={0.7}
-          >
-            <RNText style={[modeBar.tabText, showPreview && modeBar.tabTextActive]}>
-              预览
-            </RNText>
-          </TouchableOpacity>
-        </View>
-      )}
+      <View style={modeBar.container}>
+        <TouchableOpacity
+          onPress={() => setShowPreview(false)}
+          style={[modeBar.tab, !showPreview && modeBar.tabActive]}
+          activeOpacity={0.7}
+        >
+          <RNText style={[modeBar.tabText, !showPreview && modeBar.tabTextActive]}>
+            编辑
+          </RNText>
+        </TouchableOpacity>
+        <TouchableOpacity
+          onPress={() => setShowPreview(true)}
+          style={[modeBar.tab, showPreview && modeBar.tabActive]}
+          activeOpacity={0.7}
+        >
+          <RNText style={[modeBar.tabText, showPreview && modeBar.tabTextActive]}>
+            预览
+          </RNText>
+        </TouchableOpacity>
+      </View>
 
       {showPreview ? (
-        <ScrollView
-          style={noteScreen.reader}
-          contentContainerStyle={noteScreen.readerContent}
-          showsVerticalScrollIndicator={false}
-        >
-          <Markdown style={markdownStyles}>{content}</Markdown>
-        </ScrollView>
+        hasContent ? (
+          <ScrollView
+            style={noteScreen.reader}
+            contentContainerStyle={noteScreen.readerContent}
+            showsVerticalScrollIndicator={false}
+          >
+            <Markdown style={markdownStyles}>{content}</Markdown>
+          </ScrollView>
+        ) : (
+          <View style={noteScreen.centered}>
+            <RNText style={{ color: colors.textSecondary, fontSize: 15 }}>开始写作后即可预览</RNText>
+          </View>
+        )
       ) : (
         <>
           <View style={noteScreen.editorContainer}>
@@ -132,6 +151,29 @@ export default function NewNoteScreen() {
           <FormatToolbar onInsert={handleFormatInsert} />
         </>
       )}
+      {showSuccess && (
+        <Animated.View style={[styles.successToast, { opacity: fadeAnim }]}>
+          <RNText style={styles.successText}>保存成功</RNText>
+        </Animated.View>
+      )}
     </KeyboardAvoidingView>
   );
 }
+
+const styles = {
+  successToast: {
+    position: 'absolute' as const,
+    top: 100,
+    alignSelf: 'center' as const,
+    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderRadius: 20,
+    zIndex: 1000,
+  },
+  successText: {
+    color: '#fff',
+    fontSize: 15,
+    fontWeight: '500' as const,
+  },
+};
